@@ -49,7 +49,7 @@ func fetchStreamInfo(client *helix.Client, user_id string) (*helix.Stream, error
 	return nil, fmt.Errorf("no stream returned for uid: %s", user_id)
 }
 
-func handlerEventSub(secretKey string, client *helix.Client, tmpl *template.Template) http.HandlerFunc {
+func handlerEventSub(secretKey string, client *helix.Client, tmpl *template.Template, discordWebhook string) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Read the request body.
 		body, err := ioutil.ReadAll(r.Body)
@@ -88,19 +88,46 @@ func handlerEventSub(secretKey string, client *helix.Client, tmpl *template.Temp
 			_ = json.NewDecoder(bytes.NewReader(vals.Event)).Decode(&onlineEvent)
 			log.Printf("got online event for: %s\n", onlineEvent.BroadcasterUserName)
 
+			// We got the event successfully, let twitch know
+			w.WriteHeader(200)
+			w.Write([]byte("ok"))
+
 			stream, err := fetchStreamInfo(client, onlineEvent.BroadcasterUserID)
 			if err != nil {
 				log.Error(err)
 				panic(errors.Wrap(err, fmt.Sprintf("Error fetching stream info for %s (uid: %s)", onlineEvent.BroadcasterUserName, onlineEvent.BroadcasterUserID)))
 			}
-			w.WriteHeader(200)
-			w.Write([]byte("ok"))
 
-			tmpl.Execute(os.Stderr, map[string]string{
+			var templateOutput bytes.Buffer
+			err = tmpl.Execute(&templateOutput, map[string]string{
 				"Game":        stream.GameName,
 				"ChannelName": stream.UserName,
 				"ChannelUrl":  fmt.Sprintf("https://www.twitch.tv/%s", stream.UserLogin),
 			})
+
+			if err != nil {
+				panic(errors.Wrap(err, "Error populating template"))
+			}
+
+			if len(discordWebhook) > 0 {
+				jsonBody, err := json.Marshal(map[string]interface{}{"content": string(templateOutput.String())})
+				if err != nil {
+					panic(errors.Wrap(err, "unable to create json to send to discord"))
+				}
+				bodyReader := bytes.NewReader(jsonBody)
+				req, err := http.NewRequest(http.MethodPost, discordWebhook, bodyReader)
+				if err != nil {
+					panic(errors.Wrap(err, "unable to create discord http client"))
+				}
+				req.Header.Set("Content-Type", "application/json")
+
+				client := http.Client{Timeout: 30 * time.Second}
+
+				_, err = client.Do(req)
+				if err != nil {
+					panic(errors.Wrap(err, "posting to discord failed"))
+				}
+			}
 
 		} else {
 			log.Errorf("error: event type %s has not been implemented -- pull requests welcome!", r.Header.Get("Twitch-Eventsub-Subscription-Type"))
@@ -194,8 +221,7 @@ func mustJson(data interface{}) string {
 func main() {
 	// if len(os.Getenv("SENTRY_DSN")) > 0 {
 	err := sentry.Init(sentry.ClientOptions{
-		// Dsn:   os.Getenv("SENTRY_DSN"),
-		Dsn:   "https://9639d9a8f4654a698c71fde09cbb19cd@o76673.ingest.sentry.io/6460422",
+		Dsn:   os.Getenv("SENTRY_DSN"),
 		Debug: true,
 	})
 	if err != nil {
@@ -214,6 +240,7 @@ func main() {
 	publicUrl := os.Getenv("PUBLIC_URL")
 	twitchLogins := os.Getenv("TWITCH_LOGINS")
 	goliveMessage := os.Getenv("GOLIVE_MESSAGE")
+	discordWebhook := os.Getenv("DISCORD_WEBHOOK")
 
 	if len(goliveMessage) == 0 {
 		goliveMessage = postMessageTmpl
@@ -286,7 +313,7 @@ func main() {
 
 	log.Printf("server starting on %s\n", port)
 
-	http.HandleFunc("/webhook/callbacks", sentryHandler.HandleFunc(handlerEventSub(secretKey, client, tmpl)))
+	http.HandleFunc("/webhook/callbacks", sentryHandler.HandleFunc(handlerEventSub(secretKey, client, tmpl, discordWebhook)))
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		io.WriteString(w, "\n")
 	})
