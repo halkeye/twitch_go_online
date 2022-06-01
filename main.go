@@ -98,8 +98,8 @@ func handlerEventSub(secretKey string, client *helix.Client, tmpl *template.Temp
 
 			tmpl.Execute(os.Stderr, map[string]string{
 				"Game":        stream.GameName,
-				"ChannelName": onlineEvent.BroadcasterUserName,
-				"ChannelUrl":  fmt.Sprintf("https://www.twitch.tv/%s", onlineEvent.BroadcasterUserName),
+				"ChannelName": stream.UserName,
+				"ChannelUrl":  fmt.Sprintf("https://www.twitch.tv/%s", stream.UserLogin),
 			})
 
 		} else {
@@ -287,9 +287,6 @@ func main() {
 	log.Printf("server starting on %s\n", port)
 
 	http.HandleFunc("/webhook/callbacks", sentryHandler.HandleFunc(handlerEventSub(secretKey, client, tmpl)))
-	http.HandleFunc("/foo", sentryHandler.HandleFunc(func(rw http.ResponseWriter, r *http.Request) {
-		panic("y tho")
-	}))
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		io.WriteString(w, "\n")
 	})
