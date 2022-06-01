@@ -236,7 +236,6 @@ func main() {
 	defer sentry.Flush(2 * time.Second)
 	// }
 	//
-	sentry.CaptureMessage("It works!")
 
 	clientId := os.Getenv("TWITCH_CLIENT_ID")
 	clientSecret := os.Getenv("TWITCH_CLIENT_SECRET")
