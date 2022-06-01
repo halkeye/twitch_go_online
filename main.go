@@ -185,26 +185,30 @@ func registerSubscription(secretKey string, client *helix.Client, usernames []st
 			if err != nil {
 				return errors.Wrap(err, "Error removing subscriptions")
 			}
+		} else {
+			log.Infof("Not one of my subscriptions: %s => %s", sub.Transport.Callback, sub.Condition.BroadcasterUserID)
 		}
 	}
 
-	createSubResp, err := client.CreateEventSubSubscription(&helix.EventSubSubscription{
-		Type:      helix.EventSubTypeStreamOnline,
-		Version:   "1",
-		Condition: helix.EventSubCondition{BroadcasterUserID: userIds[0]},
-		Transport: helix.EventSubTransport{
-			Method:   "webhook",
-			Callback: fmt.Sprintf("%swebhook/callbacks", publicUrl),
-			Secret:   secretKey,
-		},
-	})
+	for _, userId := range userIds {
+		createSubResp, err := client.CreateEventSubSubscription(&helix.EventSubSubscription{
+			Type:      helix.EventSubTypeStreamOnline,
+			Version:   "1",
+			Condition: helix.EventSubCondition{BroadcasterUserID: userId},
+			Transport: helix.EventSubTransport{
+				Method:   "webhook",
+				Callback: fmt.Sprintf("%swebhook/callbacks", publicUrl),
+				Secret:   secretKey,
+			},
+		})
 
-	if err != nil {
-		return errors.Wrap(err, "Error creating subscription")
-	}
+		if err != nil {
+			return errors.Wrap(err, "Error creating subscription")
+		}
 
-	if createSubResp.ErrorStatus > 0 {
-		return errors.Errorf("Error creating subscription (%d) - %s", createSubResp.ErrorStatus, createSubResp.Error)
+		if createSubResp.ErrorStatus > 0 {
+			return errors.Errorf("Error creating subscription (%d) - %s", createSubResp.ErrorStatus, createSubResp.Error)
+		}
 	}
 
 	return nil
