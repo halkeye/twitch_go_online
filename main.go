@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"text/template"
 	"time"
@@ -100,9 +101,9 @@ func handlerEventSub(secretKey string, client *helix.Client, tmpl *template.Temp
 
 			var templateOutput bytes.Buffer
 			err = tmpl.Execute(&templateOutput, map[string]string{
-				"Game":        stream.GameName,
-				"ChannelName": stream.UserName,
-				"ChannelUrl":  fmt.Sprintf("https://www.twitch.tv/%s", stream.UserLogin),
+				"Game":        escapeMarkdown(stream.GameName),
+				"ChannelName": escapeMarkdown(stream.UserName),
+				"ChannelUrl":  fmt.Sprintf("https://www.twitch.tv/%s", escapeMarkdown(stream.UserLogin)),
 			})
 
 			if err != nil {
@@ -220,6 +221,14 @@ func mustJson(data interface{}) string {
 		panic(err)
 	}
 	return string(b)
+}
+
+func escapeMarkdown(text string) string {
+	r, err := regexp.Compile("([_*\\[\\]()~`>#+-=|.!])")
+	if err != nil {
+		panic(err)
+	}
+	return r.ReplaceAllString(text, "\\$1")
 }
 
 func main() {
