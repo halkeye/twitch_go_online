@@ -11,6 +11,8 @@ func TestEscapeMarkdown(t *testing.T) {
 	}{
 		{"foo", "foo"},
 		{"thing _ with _ underscores", "thing \\_ with \\_ underscores"},
+		{"sw**r", "sw\\*\\*r"},
+		{"12345", "12345"},
 	}
 	for _, tt := range tests {
 		testname := tt.text

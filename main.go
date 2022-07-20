@@ -224,7 +224,7 @@ func mustJson(data interface{}) string {
 }
 
 func escapeMarkdown(text string) string {
-	r, err := regexp.Compile("([_*\\[\\]()~`>#+-=|.!])")
+	r, err := regexp.Compile("([_*\\[\\]()~`>#+=|.!-])")
 	if err != nil {
 		panic(err)
 	}
