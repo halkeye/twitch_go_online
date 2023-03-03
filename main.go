@@ -231,6 +231,22 @@ func escapeMarkdown(text string) string {
 	return r.ReplaceAllString(text, "\\$1")
 }
 
+func scheduleRefresh(client *helix.Client, refreshToken string, expiresIn int) {
+	expiresInDur := time.Duration(expiresIn) * time.Second
+	log.Infof("Scheduling refreshing twitch client token in %d seconds at %s", expiresIn, time.Now().Add(expiresInDur).String())
+
+	time.AfterFunc(expiresInDur, func() {
+		log.Info("Refreshing twitch client token")
+		refreshResp, err := client.RefreshUserAccessToken(refreshToken)
+		if err != nil {
+			err = errors.Wrap(err, "Unable to refresh app token")
+			sentry.CaptureException(err)
+			log.Panic(err)
+		}
+		scheduleRefresh(client, refreshResp.Data.RefreshToken, refreshResp.Data.ExpiresIn)
+	})
+}
+
 func main() {
 	// if len(os.Getenv("SENTRY_DSN")) > 0 {
 	err := sentry.Init(sentry.ClientOptions{
@@ -271,19 +287,19 @@ func main() {
 	if err != nil {
 		err = errors.Wrap(err, "Unable to create twitch client")
 		sentry.CaptureException(err)
-		log.Error(err)
+		log.Panic(err)
 	}
 
 	resp, err := client.RequestAppAccessToken([]string{"user:read:email"})
 	if err != nil {
 		err = errors.Wrap(err, "Unable to request app token")
 		sentry.CaptureException(err)
-		log.Error(err)
-		return
+		log.Panic(err)
 	}
 
 	// Set the access token on the client
 	client.SetAppAccessToken(resp.Data.AccessToken)
+	scheduleRefresh(client, resp.Data.RefreshToken, resp.Data.ExpiresIn)
 
 	port := ":3000"
 	if os.Getenv("PORT") != "" {
