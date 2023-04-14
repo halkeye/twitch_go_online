@@ -10,21 +10,15 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"text/template"
 	"time"
+
+	"github.com/halkeye/twitch_go_online/internal/discordsender"
 
 	sentry "github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	helix "github.com/nicklaw5/helix/v2"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	postMessageTmpl = `Look alive, mateys! {{.ChannelName}} is playing {{.Game}}
-Channel URL: {{.ChannelUrl}}
-
-Go give them some love!`
 )
 
 // eventSubNotification is a struct to hold the eventSub webhook request from Twitch.
@@ -50,13 +44,12 @@ func fetchStreamInfo(client *helix.Client, user_id string) (*helix.Stream, error
 	return nil, fmt.Errorf("no stream returned for uid: %s", user_id)
 }
 
-func handlerEventSub(secretKey string, client *helix.Client, tmpl *template.Template, discordWebhook string) http.HandlerFunc {
+func handlerEventSub(secretKey string, client *helix.Client, ds *discordsender.DiscordSender) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Read the request body.
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			panic(errors.Wrap(err, "Error reading incoming post"))
-			return
 		}
 		defer r.Body.Close()
 
@@ -99,37 +92,14 @@ func handlerEventSub(secretKey string, client *helix.Client, tmpl *template.Temp
 				panic(errors.Wrap(err, fmt.Sprintf("Error fetching stream info for %s (uid: %s)", onlineEvent.BroadcasterUserName, onlineEvent.BroadcasterUserID)))
 			}
 
-			var templateOutput bytes.Buffer
-			err = tmpl.Execute(&templateOutput, map[string]string{
+			tmplParams := map[string]string{
 				"Game":        escapeMarkdown(stream.GameName),
 				"ChannelName": escapeMarkdown(stream.UserName),
 				"ChannelUrl":  fmt.Sprintf("https://www.twitch.tv/%s", escapeMarkdown(stream.UserLogin)),
-			})
-
-			if err != nil {
-				panic(errors.Wrap(err, "Error populating template"))
 			}
-
-			if len(discordWebhook) > 0 {
-				jsonBody, err := json.Marshal(map[string]interface{}{"content": string(templateOutput.String())})
-				if err != nil {
-					panic(errors.Wrap(err, "unable to create json to send to discord"))
-				}
-				bodyReader := bytes.NewReader(jsonBody)
-				req, err := http.NewRequest(http.MethodPost, discordWebhook, bodyReader)
-				if err != nil {
-					panic(errors.Wrap(err, "unable to create discord http client"))
-				}
-				req.Header.Set("Content-Type", "application/json")
-
-				client := http.Client{Timeout: 30 * time.Second}
-
-				_, err = client.Do(req)
-				if err != nil {
-					panic(errors.Wrap(err, "posting to discord failed"))
-				}
+			if err := ds.Send(tmplParams); err != nil {
+				panic(errors.Wrap(err, "unable to send webhook"))
 			}
-
 		} else {
 			log.Errorf("error: event type %s has not been implemented -- pull requests welcome!", r.Header.Get("Twitch-Eventsub-Subscription-Type"))
 		}
@@ -270,11 +240,7 @@ func main() {
 	goliveMessage := os.Getenv("GOLIVE_MESSAGE")
 	discordWebhook := os.Getenv("DISCORD_WEBHOOK")
 
-	if len(goliveMessage) == 0 {
-		goliveMessage = postMessageTmpl
-	}
-
-	tmpl := template.Must(template.New("message").Parse(goliveMessage))
+	ds := discordsender.New(discordWebhook, goliveMessage)
 
 	if len(secretKey) == 0 {
 		panic("no secret key provided")
@@ -341,7 +307,7 @@ func main() {
 
 	log.Printf("server starting on %s\n", port)
 
-	http.HandleFunc("/webhook/callbacks", sentryHandler.HandleFunc(handlerEventSub(secretKey, client, tmpl, discordWebhook)))
+	http.HandleFunc("/webhook/callbacks", sentryHandler.HandleFunc(handlerEventSub(secretKey, client, ds)))
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		io.WriteString(w, "\n")
 	})
