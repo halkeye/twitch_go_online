@@ -36,7 +36,8 @@ func New(discordWebhook string, goliveMessage string) *DiscordSender {
 }
 
 func (ds *DiscordSender) Send(tmplParams map[string]string) error {
-	if len(ds.discordWebhook) > 0 {
+	if len(ds.discordWebhook) == 0 {
+		log.Info("No webhook setup, so bailing")
 		return nil
 	}
 
