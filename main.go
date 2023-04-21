@@ -96,7 +96,7 @@ func handlerEventSub(secretKey string, client *helix.Client, ds *discordsender.D
 			tmplParams := map[string]string{
 				"Game":        escapeMarkdown(stream.GameName),
 				"ChannelName": escapeMarkdown(stream.UserName),
-				"ChannelUrl":  fmt.Sprintf("https://www.twitch.tv/%s", escapeMarkdown(stream.UserLogin)),
+				"ChannelUrl":  fmt.Sprintf("https://www.twitch.tv/%s", stream.UserLogin),
 			}
 			if err := ds.Send(tmplParams); err != nil {
 				panic(errors.Wrap(err, "unable to send webhook"))
