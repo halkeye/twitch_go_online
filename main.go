@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/halkeye/twitch_go_online/internal/airtable"
 	"github.com/halkeye/twitch_go_online/internal/discordsender"
 
 	sentry "github.com/getsentry/sentry-go"
@@ -218,7 +219,6 @@ func scheduleRefresh(client *helix.Client, refreshToken string, expiresIn int) {
 }
 
 func main() {
-	// if len(os.Getenv("SENTRY_DSN")) > 0 {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:   os.Getenv("SENTRY_DSN"),
 		Debug: true,
@@ -229,38 +229,47 @@ func main() {
 	log.Info("Sentry initialized")
 	// Flush buffered events before the program terminates.
 	defer sentry.Flush(2 * time.Second)
-	// }
-	//
 
+	err = realMain()
+	if err != nil {
+		sentry.CaptureException(err)
+		log.Panic(err)
+	}
+}
+
+func realMain() error {
 	clientId := os.Getenv("TWITCH_CLIENT_ID")
 	clientSecret := os.Getenv("TWITCH_CLIENT_SECRET")
 	secretKey := os.Getenv("SECRETKEY")
 	publicUrl := os.Getenv("PUBLIC_URL")
-	twitchLogins := os.Getenv("TWITCH_LOGINS")
 	goliveMessage := os.Getenv("GOLIVE_MESSAGE")
 	discordWebhook := os.Getenv("DISCORD_WEBHOOK")
-
-	ds := discordsender.New(discordWebhook, goliveMessage)
+	airtableAPIKey := os.Getenv("AIRTABLE_API_KEY")
+	airtableTableName := os.Getenv("AIRTABLE_TABLE_NAME")
+	airtableBaseId := "app9gXc0ovBSGKOSE"
 
 	if len(secretKey) == 0 {
-		panic("no secret key provided")
+		return errors.New("no secret key provided")
 	}
+
+	if len(airtableAPIKey) == 0 || len(airtableBaseId) == 0 || len(airtableTableName) == 0 {
+		return errors.New("missing airtable config")
+	}
+
+	ds := discordsender.New(discordWebhook, goliveMessage)
+	at := airtable.New(airtableAPIKey, airtableBaseId, airtableTableName)
 
 	client, err := helix.NewClient(&helix.Options{
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
 	})
 	if err != nil {
-		err = errors.Wrap(err, "Unable to create twitch client")
-		sentry.CaptureException(err)
-		log.Panic(err)
+		return errors.Wrap(err, "Unable to create twitch client")
 	}
 
 	resp, err := client.RequestAppAccessToken([]string{"user:read:email"})
 	if err != nil {
-		err = errors.Wrap(err, "Unable to request app token")
-		sentry.CaptureException(err)
-		log.Panic(err)
+		return errors.Wrap(err, "Unable to request app token")
 	}
 
 	// Set the access token on the client
@@ -272,12 +281,15 @@ func main() {
 		port = ":" + os.Getenv("PORT")
 	}
 
-	err = registerSubscription(secretKey, client, strings.Split(twitchLogins, ","), publicUrl)
+	err = at.RegisterWebhook(fmt.Sprintf("%swebhook/airtable", publicUrl))
 	if err != nil {
-		err = errors.Wrap(err, "Unable to create subscriptions")
-		sentry.CaptureException(err)
-		log.Error(err)
-		return
+		return errors.Wrap(err, "Unable to register airtable webhook")
+	}
+	twitchusernames, err := at.Usernames()
+
+	err = registerSubscription(secretKey, client, twitchusernames, publicUrl)
+	if err != nil {
+		return errors.Wrap(err, "Unable to create subscriptions")
 	}
 
 	/*
@@ -308,13 +320,19 @@ func main() {
 	log.Printf("server starting on %s\n", port)
 
 	http.HandleFunc("/webhook/callbacks", sentryHandler.HandleFunc(handlerEventSub(secretKey, client, ds)))
+	http.HandleFunc("/webhook/airtable", sentryHandler.HandleFunc(at.HttpHandler(func(usernames []string) {
+		err = registerSubscription(secretKey, client, twitchusernames, publicUrl)
+		if err != nil {
+			panic(errors.Wrap(err, "Unable to create subscriptions"))
+		}
+	})))
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		io.WriteString(w, "\n")
 	})
 
 	handler := sentryhttp.New(sentryhttp.Options{}).Handle(http.DefaultServeMux)
 	if err := http.ListenAndServe(port, handler); err != nil {
-		log.Fatal(err)
-		panic(err)
+		return errors.Wrap(err, "unable to listen")
 	}
+	return nil
 }
