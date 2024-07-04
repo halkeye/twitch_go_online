@@ -52,7 +52,7 @@ func handlerEventSub(secretKey string, client *helix.Client, ds *discordsender.D
 		if err != nil {
 			panic(errors.Wrap(err, "Error reading incoming post"))
 		}
-		defer r.Body.Close()
+		defer dclose(r.Body)
 
 		// Verify that the notification came from twitch using the secret.
 		if !helix.VerifyEventSubNotification(secretKey, r.Header, string(body)) {
@@ -74,7 +74,10 @@ func handlerEventSub(secretKey string, client *helix.Client, ds *discordsender.D
 
 		// If there's a challenge in the request respond with only the challenge to verify the eventsubscription.
 		if vals.Challenge != "" {
-			w.Write([]byte(vals.Challenge))
+			_, err := w.Write([]byte(vals.Challenge))
+			if err != nil {
+				panic(fmt.Errorf("unable to write challenge: %w", err))
+			}
 			return
 		}
 
@@ -85,7 +88,10 @@ func handlerEventSub(secretKey string, client *helix.Client, ds *discordsender.D
 
 			// We got the event successfully, let twitch know
 			w.WriteHeader(200)
-			w.Write([]byte("ok"))
+			_, err := w.Write([]byte("ok"))
+			if err != nil {
+				panic(fmt.Errorf("unable to write body: %w", err))
+			}
 
 			stream, err := fetchStreamInfo(client, onlineEvent.BroadcasterUserID)
 			if err != nil {
@@ -337,7 +343,10 @@ func realMain() error {
 		}
 	})))
 	http.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		io.WriteString(w, "\n")
+		_, err := io.WriteString(w, "\n")
+		if err != nil {
+			panic(fmt.Errorf("unable to write body: %w", err))
+		}
 	})
 
 	handler := sentryhttp.New(sentryhttp.Options{}).Handle(http.DefaultServeMux)
@@ -345,4 +354,10 @@ func realMain() error {
 		return errors.Wrap(err, "unable to listen")
 	}
 	return nil
+}
+
+func dclose(c io.Closer) {
+	if err := c.Close(); err != nil {
+		log.Fatal(err)
+	}
 }
