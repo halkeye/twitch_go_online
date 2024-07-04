@@ -304,23 +304,23 @@ func realMain() error {
 		return errors.Wrap(err, "Unable to create subscriptions")
 	}
 
-	ticker := time.NewTicker(1 * time.Minute)
-	quit := make(chan struct{})
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				getSubResp, err := client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
-				if err != nil {
-					continue
-				}
-				log.Info(mustJson(getSubResp.Data.EventSubSubscriptions))
-			case <-quit:
-				ticker.Stop()
-				return
-			}
-		}
-	}()
+	// ticker := time.NewTicker(1 * time.Minute)
+	// quit := make(chan struct{})
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case <-ticker.C:
+	// 			getSubResp, err := client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
+	// 			if err != nil {
+	// 				continue
+	// 			}
+	// 			log.Info(mustJson(getSubResp.Data.EventSubSubscriptions))
+	// 		case <-quit:
+	// 			ticker.Stop()
+	// 			return
+	// 		}
+	// 	}
+	// }()
 
 	// Create an instance of sentryhttp
 	sentryHandler := sentryhttp.New(sentryhttp.Options{
