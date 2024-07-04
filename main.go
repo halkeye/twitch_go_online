@@ -5,21 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
 	"time"
 
-	"github.com/halkeye/twitch_go_online/internal/airtable"
-	"github.com/halkeye/twitch_go_online/internal/discordsender"
-
 	sentry "github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	helix "github.com/nicklaw5/helix/v2"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/halkeye/twitch_go_online/internal/airtable"
+	"github.com/halkeye/twitch_go_online/internal/discordsender"
 )
 
 // eventSubNotification is a struct to hold the eventSub webhook request from Twitch.
@@ -48,7 +47,7 @@ func fetchStreamInfo(client *helix.Client, user_id string) (*helix.Stream, error
 func handlerEventSub(secretKey string, client *helix.Client, ds *discordsender.DiscordSender) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Read the request body.
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			panic(errors.Wrap(err, "Error reading incoming post"))
 		}
@@ -292,25 +291,23 @@ func realMain() error {
 		return errors.Wrap(err, "Unable to create subscriptions")
 	}
 
-	/*
-		ticker := time.NewTicker(5 * time.Second)
-		quit := make(chan struct{})
-		go func() {
-			for {
-				select {
-				case <-ticker.C:
-					getSubResp, err := client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
-					if err != nil {
-						continue
-					}
-					log.Info(mustJson(getSubResp.Data.EventSubSubscriptions))
-				case <-quit:
-					ticker.Stop()
-					return
+	ticker := time.NewTicker(1 * time.Minute)
+	quit := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				getSubResp, err := client.GetEventSubSubscriptions(&helix.EventSubSubscriptionsParams{})
+				if err != nil {
+					continue
 				}
+				log.Info(mustJson(getSubResp.Data.EventSubSubscriptions))
+			case <-quit:
+				ticker.Stop()
+				return
 			}
-		}()
-	*/
+		}
+	}()
 
 	// Create an instance of sentryhttp
 	sentryHandler := sentryhttp.New(sentryhttp.Options{
