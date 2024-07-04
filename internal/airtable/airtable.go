@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -33,7 +32,7 @@ func New(APIKey string, baseID string, tableName string) *Airtable {
 func (at *Airtable) HttpHandler(callback webhookCallback) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Read the request body.
-		body, err := ioutil.ReadAll(r.Body)
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			panic(errors.Wrap(err, "Error reading incoming post"))
 		}
@@ -53,7 +52,6 @@ func (at *Airtable) Usernames() ([]string, error) {
 	usernames := []string{}
 
 	endpoint := fmt.Sprintf("https://api.airtable.com/v0/%s/%s", at.BaseID, at.TableName)
-	log.Info(endpoint)
 
 	var result map[string]interface{}
 	err := at.get(endpoint, &result)
@@ -63,14 +61,19 @@ func (at *Airtable) Usernames() ([]string, error) {
 
 	for _, record := range result["records"].([]interface{}) {
 		fields := record.(map[string]interface{})["fields"].(map[string]interface{})
+		if len(fields) == 0 {
+			continue
+		}
+		log.WithField("fields", mustJson(fields)).Debug("fields")
 		if twitchAccountField, ok := fields["Twitch Account"]; ok {
+			log.WithField("twitchAccountField", twitchAccountField).Debug("twitchAccountField")
 			if val, ok := twitchAccountField.(string); ok {
 				val = strings.TrimSpace(val)
 				if len(val) > 0 {
 					usernames = append(usernames, val)
 				}
 			} else {
-				return usernames, errors.New("record has no twitch account")
+				log.Warn("record has no twitch account")
 			}
 		} else {
 			return usernames, errors.New("record has no twitch account")
@@ -112,7 +115,9 @@ func (at *Airtable) RegisterWebhook(webhookURL string) error {
 
 func (at *Airtable) refreshWebhook(id string) error {
 	var result map[string]interface{}
+
 	endpoint := fmt.Sprintf("https://api.airtable.com/v0/bases/%s/webhooks/%s/refresh", at.BaseID, id)
+
 	err := at.post(endpoint, nil, &result)
 	if err != nil {
 		return errors.Wrap(err, "unable to refresh webhook")
@@ -159,6 +164,7 @@ func decodeJSON(r io.Reader, v interface{}) error {
 func (at *Airtable) get(endpoint string, result interface{}) error {
 	var err error
 
+	log.WithField("endpoint", endpoint).Debug("getting endpoint")
 	req, err := http.NewRequest("GET", endpoint, nil)
 	if err != nil {
 		return errors.Wrap(err, "unable to get from airtable")
@@ -193,6 +199,7 @@ func (at *Airtable) post(endpoint string, body interface{}, result interface{}) 
 		}
 	}
 
+	log.WithField("endpoint", endpoint).Debug("posting endpoint")
 	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(payload))
 	if err != nil {
 		return errors.Wrap(err, "unable to create request")
@@ -215,4 +222,12 @@ func (at *Airtable) post(endpoint string, body interface{}, result interface{}) 
 	}
 
 	return nil
+}
+
+func mustJson(data interface{}) string {
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
 }

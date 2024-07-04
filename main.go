@@ -13,6 +13,7 @@ import (
 
 	sentry "github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
+	"github.com/makasim/sentryhook"
 	helix "github.com/nicklaw5/helix/v2"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -218,6 +219,13 @@ func scheduleRefresh(client *helix.Client, refreshToken string, expiresIn int) {
 }
 
 func main() {
+	for _, level := range log.AllLevels {
+		if level.String() == os.Getenv("LOG_LEVEL") {
+			log.SetLevel(level)
+		}
+	}
+
+	log.AddHook(sentryhook.New([]log.Level{log.PanicLevel, log.FatalLevel, log.ErrorLevel}))
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:   os.Getenv("SENTRY_DSN"),
 		Debug: true,
@@ -285,6 +293,11 @@ func realMain() error {
 		return errors.Wrap(err, "Unable to register airtable webhook")
 	}
 	twitchusernames, err := at.Usernames()
+	if err != nil {
+		return errors.Wrap(err, "Error fetching usernames")
+	}
+
+	log.WithFields(log.Fields{"usernames": twitchusernames}).Debug("twitch user names")
 
 	err = registerSubscription(secretKey, client, twitchusernames, publicUrl)
 	if err != nil {
