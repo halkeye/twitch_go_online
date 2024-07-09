@@ -6,7 +6,7 @@ require (
 	github.com/air-verse/air v1.52.3
 	github.com/getsentry/sentry-go v0.28.1
 	github.com/makasim/sentryhook v0.5.0
-	github.com/nicklaw5/helix/v2 v2.29.0
+	github.com/nicklaw5/helix/v2 v2.30.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 )
