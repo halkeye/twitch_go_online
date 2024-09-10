@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/air-verse/air v1.52.3
-	github.com/getsentry/sentry-go v0.28.1
+	github.com/getsentry/sentry-go v0.29.0
 	github.com/makasim/sentryhook v0.5.0
 	github.com/nicklaw5/helix/v2 v2.30.0
 	github.com/pkg/errors v0.9.1
@@ -33,5 +33,5 @@ require (
 	github.com/tdewolff/parse/v2 v2.7.12 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 )
