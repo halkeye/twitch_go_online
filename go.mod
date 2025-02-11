@@ -2,10 +2,10 @@ module github.com/halkeye/twitch_go_online
 
 go 1.23
 
-toolchain go1.23.5
+toolchain go1.24.0
 
 require (
-	github.com/air-verse/air v1.61.5
+	github.com/air-verse/air v1.61.7
 	github.com/getsentry/sentry-go v0.31.1
 	github.com/makasim/sentryhook v0.5.0
 	github.com/nicklaw5/helix/v2 v2.31.0
