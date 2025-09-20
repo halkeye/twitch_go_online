@@ -6,7 +6,7 @@ toolchain go1.25.1
 
 require (
 	github.com/air-verse/air v1.63.0
-	github.com/getsentry/sentry-go v0.34.0
+	github.com/getsentry/sentry-go v0.35.3
 	github.com/makasim/sentryhook v0.5.0
 	github.com/nicklaw5/helix/v2 v2.31.1
 	github.com/pkg/errors v0.9.1
