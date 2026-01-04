@@ -23,6 +23,8 @@ github.com/air-verse/air v1.62.0 h1:6CoXL4MAX9dc4xAzLfjMcDfbBoGmW5VjuuTV/1+bI+M=
 github.com/air-verse/air v1.62.0/go.mod h1:EO+jWuetL10tS9raffwg8WEV0t0KUeucRRaf9ii86dA=
 github.com/air-verse/air v1.63.0 h1:fwcdHpwaUe4/+q349PxptzAIn8gVE6Yke8TgW0LsDxQ=
 github.com/air-verse/air v1.63.0/go.mod h1:RyCQVx2+3Zz2BzoqkukYiGmWkWXNKMf0x5ubIFcUB8Q=
+github.com/air-verse/air v1.63.5 h1:gFUSnH4lmdRG0rsdqEy68rbFAAJ9AZuACBnZnZUrKbk=
+github.com/air-verse/air v1.63.5/go.mod h1:Dnn4m4DlC9IQiNd3ir57SOdpvGJ3gnC1+OlIGMi2fJY=
 github.com/ajg/form v1.5.1/go.mod h1:uL1WgH+h2mgNtvBq0339dVnzXdBETtL2LeUXaIv25UY=
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
@@ -109,6 +111,8 @@ github.com/getsentry/sentry-go v0.34.0 h1:1FCHBVp8TfSc8L10zqSwXUZNiOSF+10qw4czja
 github.com/getsentry/sentry-go v0.34.0/go.mod h1:C55omcY9ChRQIUcVcGcs+Zdy4ZpQGvNJ7JYHIoSWOtE=
 github.com/getsentry/sentry-go v0.36.2 h1:uhuxRPTrUy0dnSzTd0LrYXlBYygLkKY0hhlG5LXarzM=
 github.com/getsentry/sentry-go v0.36.2/go.mod h1:p5Im24mJBeruET8Q4bbcMfCQ+F+Iadc4L48tB1apo2c=
+github.com/getsentry/sentry-go v0.40.0 h1:VTJMN9zbTvqDqPwheRVLcp0qcUcM+8eFivvGocAaSbo=
+github.com/getsentry/sentry-go v0.40.0/go.mod h1:eRXCoh3uvmjQLY6qu63BjUZnaBu5L5WhMV1RwYO8W5s=
 github.com/gin-contrib/sse v0.1.0/go.mod h1:RHrZQHXnP2xjPF+u1gW/2HnVO7nvIa9PG3Gm+fLHvGI=
 github.com/gin-gonic/gin v1.8.1/go.mod h1:ji8BvRH1azfM+SYow9zQ6SZMvR8qOMZHmsCuWR9tTTk=
 github.com/go-errors/errors v1.0.1 h1:LUHzmkK3GUKUrL/1gfBUxAHzcev3apQlezX/+O7ma6w=
@@ -142,6 +146,8 @@ github.com/gohugoio/hugo v0.149.1/go.mod h1:HS6BP6e8FGxungP4CHC3zeLDvhBLnTJIjHJZ
 github.com/golang-jwt/jwt v3.2.2+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang-jwt/jwt/v4 v4.4.1 h1:pC5DB52sCeK48Wlb9oPcdhnjkz1TKt1D/P7WKJ0kUcQ=
 github.com/golang-jwt/jwt/v4 v4.4.1/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w39/MY0Ch0=
+github.com/golang-jwt/jwt/v4 v4.5.2 h1:YtQM7lnr8iZ+j5q71MGKkNw9Mn7AjHM68uc9g5fXeUI=
+github.com/golang-jwt/jwt/v4 v4.5.2/go.mod h1:m21LjoU+eqJr34lmDMbreY2eSTRJ1cv77w39/MY0Ch0=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
@@ -252,6 +258,8 @@ github.com/nicklaw5/helix/v2 v2.31.0 h1:/8E5H20D/f3PGmSWT5NWtjwt+M8/GeCjnK/AkoLI
 github.com/nicklaw5/helix/v2 v2.31.0/go.mod h1:e1GsZq4NDk9sQlPJ0Nr3+14R9cizqg09VAk7/IonpOU=
 github.com/nicklaw5/helix/v2 v2.31.1 h1:HFO6Bc+3/CalHDW2nFGqIPdJ1ix+oO9xzoo4cnuz9Oo=
 github.com/nicklaw5/helix/v2 v2.31.1/go.mod h1:e1GsZq4NDk9sQlPJ0Nr3+14R9cizqg09VAk7/IonpOU=
+github.com/nicklaw5/helix/v2 v2.32.0 h1:ZRPt+wRUMQqpny6yZKVY9rUGNwv+ZmIh75fSiopMXuY=
+github.com/nicklaw5/helix/v2 v2.32.0/go.mod h1:KaXa2mb2kBzsDana9RbXevTgnfU95DMoSORWo2hqlWA=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
