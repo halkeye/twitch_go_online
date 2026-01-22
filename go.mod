@@ -2,15 +2,15 @@ module github.com/halkeye/twitch_go_online
 
 go 1.25
 
-toolchain go1.25.5
+toolchain go1.25.6
 
 require (
-	github.com/air-verse/air v1.64.0
-	github.com/getsentry/sentry-go v0.40.0
+	github.com/air-verse/air v1.64.3
+	github.com/getsentry/sentry-go v0.41.0
 	github.com/makasim/sentryhook v0.5.0
 	github.com/nicklaw5/helix/v2 v2.32.0
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 )
 
 require (
@@ -25,6 +25,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gohugoio/hugo v0.149.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
+	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/hashstructure v1.1.0 // indirect
