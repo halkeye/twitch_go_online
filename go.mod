@@ -2,7 +2,7 @@ module github.com/halkeye/twitch_go_online
 
 go 1.25
 
-toolchain go1.25.7
+toolchain go1.26.0
 
 require (
 	github.com/air-verse/air v1.64.5
