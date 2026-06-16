@@ -1,12 +1,12 @@
 module github.com/halkeye/twitch_go_online
 
-go 1.25
+go 1.25.0
 
-toolchain go1.26.2
+toolchain go1.26.4
 
 require (
-	github.com/air-verse/air v1.65.1
-	github.com/getsentry/sentry-go v0.44.1
+	github.com/air-verse/air v1.65.3
+	github.com/getsentry/sentry-go v0.47.0
 	github.com/makasim/sentryhook v0.5.0
 	github.com/nicklaw5/helix/v2 v2.34.0
 	github.com/pkg/errors v0.9.1
@@ -35,7 +35,7 @@ require (
 	github.com/spf13/afero v1.14.0 // indirect
 	github.com/spf13/cast v1.9.2 // indirect
 	github.com/tdewolff/parse/v2 v2.8.3 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
 )
