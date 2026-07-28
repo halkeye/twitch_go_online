@@ -5,7 +5,7 @@ go 1.26.0
 toolchain go1.26.5
 
 require (
-	github.com/air-verse/air v1.67.2
+	github.com/air-verse/air v1.67.3
 	github.com/getsentry/sentry-go v0.48.0
 	github.com/makasim/sentryhook v0.5.0
 	github.com/nicklaw5/helix/v2 v2.34.0
