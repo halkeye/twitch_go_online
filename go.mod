@@ -2,7 +2,7 @@ module github.com/halkeye/twitch_go_online
 
 go 1.26.0
 
-toolchain go1.26.6
+toolchain go1.27.0
 
 require (
 	github.com/air-verse/air v1.67.4
@@ -10,7 +10,7 @@ require (
 	github.com/makasim/sentryhook v0.5.0
 	github.com/nicklaw5/helix/v2 v2.34.0
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.10.0
+	github.com/sirupsen/logrus v1.10.1
 )
 
 require (
